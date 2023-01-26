@@ -22,11 +22,13 @@ public class Mover : MonoBehaviour
     // Update is called once per frame
     void Update()
     {   
-        if(Input.GetKeyDown("space"))
-            _isStopped = true;
         if(!_isStopped)
             Move();
-        
+    }
+
+    public void Stop()
+    {
+        _isStopped = true;
     }
 
     void Move()

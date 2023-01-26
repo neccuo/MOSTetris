@@ -4,12 +4,18 @@ using UnityEngine.SceneManagement;
 
 public class SquareManager : MonoBehaviour
 {
-    List<GameObject> rows = new List<GameObject>();
+    [SerializeField] List<GameObject> rows = new List<GameObject>();
     int rowCount = 10;
+
+    int colCount = 8;
 
     public GameObject squareObject;
 
+    public GameObject rowObject;
+
     int currentRow = 0;
+
+    HashSet<int> availableX = new HashSet<int>();
 
     // GameObject squareObject;
 
@@ -17,41 +23,104 @@ public class SquareManager : MonoBehaviour
     {
         for(int i = 0; i < rowCount; i++)
         {
-            rows.Add(new GameObject("row"+i.ToString()));
+            GameObject row = Instantiate(rowObject); //new GameObject("row"+i.ToString());
+            row.name = "row"+i.ToString();
+            rows.Add(row);
             rows[i].transform.SetParent(transform);
             // Instantiate(rows[i]);
         }
         InitializeRow(0);
+        InitializeAvailableX(colCount);
     }
 
-    void Update()
+    public bool PlayMove()
     {
-        if(Input.GetKeyDown("space"))
+        if(!IsMoveValid())
+            return false;
+
+        Debug.Log("Move valid");
+        StopSquares(currentRow);
+        currentRow++;
+        if(currentRow < rowCount)
+            InitializeRow(currentRow);
+        return true;
+    }
+
+    public void StopCurrentSquares()
+    {
+        StopSquares(currentRow);
+    }
+
+    void StopSquares(int rowNum)
+    {
+        var row = rows[rowNum];
+        int childCount = row.transform.childCount;
+        for(int i = 0; i < childCount; ++i)
         {
-            currentRow++;
-            if(currentRow < rowCount)
-                InitializeRow(currentRow);
+            Mover mover = row.transform.GetChild(i).GetComponent<Mover>();
+            mover.Stop();
         }
-        if(Input.GetKeyDown("r"))
+    }
+
+    bool IsMoveValid()
+    {
+        if(currentRow >= rowCount)
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            Debug.Log("Game should've ended");
+            return false;
         }
-        if (Input.GetKey("escape"))
+
+        HashSet<int> mySet = new HashSet<int>();
+        var row = rows[currentRow];
+        int childCount = row.transform.childCount;
+        for(int i = 0 ; i < childCount; ++i)
         {
-            Application.Quit();
+            int x = (int) row.transform.GetChild(i).position.x;
+            if(availableX.Contains(x))
+                mySet.Add(x);
         }
+        if(mySet.Count == 0)
+        {
+            Debug.Log("Invalid move");
+            return false;
+        }
+
+        availableX = new HashSet<int>(mySet);
+        return true;
+        
+        /*HashSet<Vector3> mySet = new HashSet<Vector3>();
+        var row = rows[currentRow];
+        int childCount = row.transform.childCount;
+        for(int i = 0; i < childCount; ++i)
+        {
+            Vector3 sqPos = row.transform.GetChild(i).position;
+            mySet.Add(new Vector3(sqPos.x, currentRow-1, sqPos.z));
+        }
+
+        row = rows[currentRow-1];
+        childCount = row.transform.childCount;
+        for(int i = 0; i < childCount; ++i)
+        {
+            Vector3 sqPos = row.transform.GetChild(i).position;
+            if(mySet.Contains(sqPos))
+                return true;
+        }*/
     }
 
     void CreateSquare(int rowNum, int squareOrder, int squareCountForRow)
     {
         GameObject obj = Instantiate(squareObject);
 
-        obj.transform.SetParent(rows[rowNum].transform);
+        RowBrain rowBrain = rows[rowNum].GetComponent<RowBrain>();
+
+        obj.transform.SetParent(rowBrain.transform);
         obj.name = "Square(" + rowNum.ToString() + "-" + squareOrder.ToString() + ")";
         obj.transform.position = new Vector3(squareOrder, rowNum, 0);
+        rowBrain.squareList.Add(obj);
+        
         Mover mover = obj.GetComponent<Mover>();
         mover.leftX = squareOrder;
-        mover.rightX = 8 - (squareCountForRow-squareOrder); // TODO: GENERALIZE IT, MIGHT HARM THE WORKFLOW
+        mover.rightX = colCount - (squareCountForRow-squareOrder); // TODO: GENERALIZE IT, MIGHT HARM THE WORKFLOW
         mover.moveRate = GetMoveRateByRowNum(rowNum);
 
     }
@@ -64,6 +133,14 @@ public class SquareManager : MonoBehaviour
         for(int i = 0; i < squareCountForRow; i++)
         {
             CreateSquare(rowNum, i, squareCountForRow);
+        }
+    }
+
+    void InitializeAvailableX(int count)
+    {
+        for(int i = 0; i < count; ++i)
+        {
+            availableX.Add(i);
         }
     }
 
