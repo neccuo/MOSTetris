@@ -9,7 +9,11 @@ public class GameManager : MonoBehaviour
 {
     public SquareManager squareManager;
 
+
+    [SerializeField] InGameSounds inGameSounds;
     [SerializeField] GameObject gameOverText;
+    [SerializeField] GameObject youWinText;
+
     [SerializeField] GameObject heartContainer;
 
 
@@ -20,9 +24,7 @@ public class GameManager : MonoBehaviour
         if(Input.GetKeyDown("space") && heartLeft > 0)
         {
             // universal spacebar
-            bool isSuccess = squareManager.PlayMove();
-            if(!isSuccess)
-                LoseHeart();
+            PlaceRow();
         }
         if(Input.GetKeyDown("r"))
         {
@@ -32,6 +34,21 @@ public class GameManager : MonoBehaviour
         {
             Application.Quit();
         }
+    }
+
+    void PlaceRow()
+    {
+        inGameSounds.PlayHit();
+        bool isSuccess = squareManager.PlayMove();
+        if(isSuccess)
+        {
+            float moveRate = squareManager.GetCurrentMoveRate();
+            inGameSounds.SetMusicPitchByMoveRate(moveRate);
+            if(squareManager.IsWin())
+                YouWin();
+        }
+        else
+            LoseHeart();
     }
 
     void LoseHeart()
@@ -44,8 +61,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void YouWin()
+    {
+        inGameSounds.SetMusicPitchToDefault();
+        youWinText.SetActive(true);
+    }
+
     void GameOver()
     {
+        inGameSounds.SetMusicPitchToDefault();
         squareManager.StopCurrentSquares();
         gameOverText.SetActive(true);
     }

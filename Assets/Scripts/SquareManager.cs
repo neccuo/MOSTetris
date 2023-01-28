@@ -46,6 +46,11 @@ public class SquareManager : MonoBehaviour
         return true;
     }
 
+    public bool IsWin()
+    {
+        return currentRow == rowCount;
+    }
+
     public void StopCurrentSquares()
     {
         StopSquares(currentRow);
@@ -87,24 +92,6 @@ public class SquareManager : MonoBehaviour
 
         availableX = new HashSet<int>(mySet);
         return true;
-        
-        /*HashSet<Vector3> mySet = new HashSet<Vector3>();
-        var row = rows[currentRow];
-        int childCount = row.transform.childCount;
-        for(int i = 0; i < childCount; ++i)
-        {
-            Vector3 sqPos = row.transform.GetChild(i).position;
-            mySet.Add(new Vector3(sqPos.x, currentRow-1, sqPos.z));
-        }
-
-        row = rows[currentRow-1];
-        childCount = row.transform.childCount;
-        for(int i = 0; i < childCount; ++i)
-        {
-            Vector3 sqPos = row.transform.GetChild(i).position;
-            if(mySet.Contains(sqPos))
-                return true;
-        }*/
     }
 
     void CreateSquare(int rowNum, int squareOrder, int squareCountForRow)
@@ -146,7 +133,14 @@ public class SquareManager : MonoBehaviour
 
     float GetMoveRateByRowNum(int rowNum)
     {
+        if(rowCount >= 13)
+            return 0.1f - (0.0075f * 13); 
         return 0.1f - (0.0075f * rowNum);
+    }
+
+    public float GetCurrentMoveRate()
+    {
+        return GetMoveRateByRowNum(currentRow);
     }
 
     int GetSquareCountByRowNum(int rowNum)
