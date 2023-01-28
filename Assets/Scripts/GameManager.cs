@@ -11,17 +11,21 @@ public class GameManager : MonoBehaviour
 
 
     [SerializeField] InGameSounds inGameSounds;
+    [SerializeField] Text heartLeftText;
     [SerializeField] GameObject gameOverText;
     [SerializeField] GameObject youWinText;
 
-    [SerializeField] GameObject heartContainer;
 
+    private int heartLeft = 2;
 
-    public int heartLeft = 3;
+    private void Start() 
+    {
+        HeartLeftTextUpdate();
+    }
 
     void Update()
     {
-        if(Input.GetKeyDown("space") && heartLeft > 0)
+        if(Input.GetKeyDown("space") && heartLeft >= 0)
         {
             // universal spacebar
             PlaceRow();
@@ -34,6 +38,11 @@ public class GameManager : MonoBehaviour
         {
             Application.Quit();
         }
+    }
+
+    void HeartLeftTextUpdate()
+    {
+        heartLeftText.text = heartLeft.ToString();
     }
 
     void PlaceRow()
@@ -54,10 +63,12 @@ public class GameManager : MonoBehaviour
     void LoseHeart()
     {
         heartLeft--;
-        Debug.Log("" + heartLeft + " heart left");
-        if(heartLeft <= 0)
-        {
+        if(heartLeft < 0)
             GameOver();
+        else
+        {
+            HeartLeftTextUpdate();
+            Debug.Log("" + heartLeft + " heart left");
         }
     }
 
@@ -69,7 +80,7 @@ public class GameManager : MonoBehaviour
 
     void GameOver()
     {
-        inGameSounds.SetMusicPitchToDefault();
+        inGameSounds.SetMusicPitchToLose();
         squareManager.StopCurrentSquares();
         gameOverText.SetActive(true);
     }

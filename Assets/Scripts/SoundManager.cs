@@ -7,9 +7,13 @@ public class SoundManager : MonoBehaviour
     public static SoundManager instance;
 
     public AudioSource musicPlayer;
-    public AudioSource sfx;
+    public AudioSource sfxPlayer;
     public AudioClip song;
     public AudioClip hit;
+
+    private string _ppMusicMute = "musicMute";
+    private string _ppSFXMute = "sfxMute";
+
 
     private void Awake()
     {
@@ -21,7 +25,8 @@ public class SoundManager : MonoBehaviour
         else
         {
             instance = this;
-            // musicPlayer.volume = 0.1f;
+            musicPlayer.mute = PlayerPrefs.GetInt(_ppMusicMute, 0) == 1;
+            sfxPlayer.mute = PlayerPrefs.GetInt(_ppSFXMute, 0) == 1;
         }
         DontDestroyOnLoad(this.gameObject);
     }
@@ -32,15 +37,22 @@ public class SoundManager : MonoBehaviour
         musicPlayer.Play();
     }
 
-    public void MuteMusic()
+    public void ToggleMusic()
     {
         musicPlayer.mute = !musicPlayer.mute;
+        PlayerPrefs.SetInt("musicMute", sfxPlayer.mute ? 1 : 0);
+    }
+
+    public void ToggleSFX()
+    {
+        sfxPlayer.mute = !sfxPlayer.mute;
+        PlayerPrefs.SetInt("sfxMute", sfxPlayer.mute ? 1 : 0);
     }
 
     public void PlayHitSound()
     {
-        sfx.clip = hit;
-        sfx.Play();
+        sfxPlayer.clip = hit;
+        sfxPlayer.Play();
     }
 
     public void SetMusicPitch(float pitch)

@@ -6,6 +6,8 @@ using UnityEngine;
 public class InGameSounds : MonoBehaviour
 {
     public float defaultMusicPitch = 1.0f;
+    public float loseMusicPitch = 0.67f;
+
     private SoundManager _soundManager;
 
     void Start()
@@ -27,6 +29,11 @@ public class InGameSounds : MonoBehaviour
     public void SetMusicPitchToDefault()
     {
         _soundManager.SetMusicPitch(defaultMusicPitch);
+    }
+
+    public void SetMusicPitchToLose()
+    {
+        _soundManager.SetMusicPitch(loseMusicPitch);
     }
 
     public void PlayHit()
